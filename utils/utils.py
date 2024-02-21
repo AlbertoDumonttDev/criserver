@@ -7,7 +7,7 @@ import glob
 
 from datetime import datetime
 
-openai.api_key = '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'
+openai.api_key = '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'
 
 
 
@@ -20,9 +20,9 @@ openai.api_key = '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'
 # import openai - para usar api da OPENAI
 # from datetime import datetime - para variaveis de horario e data
 
-def get_gpt4_response(texto, pathFile):
+def get_gpt4_response(promptUser ,attachmentUser, pathFile):
 
-    prompt = f"{texto}"
+    prompt = f"{promptUser} {attachmentUser}"
 
     initNow = datetime.now()
     initData = initNow.strftime("%d/%m/%Y")
@@ -42,6 +42,8 @@ def get_gpt4_response(texto, pathFile):
         return response['choices'][0]['message']['content'].strip()
     except Exception as e:
         return str(e)
+
+
 
 #                           create_log_gpt4
 # -------------------------------------------------------------------------
@@ -89,26 +91,27 @@ def create_log_gpt4(response, initData, initHour, pathFile):
 
 def get_prompt_drive(pathFile):
 
-        path = pathFile
+        path = pathFile 
 
-        
-        inUse = '*EM USO.yaml'
+        inUse = '* EM USO.yml'
 
         # Usando glob para encontrar arquivos que correspondam ao padrão
         fileSearch = glob.glob(path + inUse)
-
+        
         # Checando se algum arquivo foi encontrado e lendo o primeiro que corresponder
         if fileSearch:
             fileSearchReady = fileSearch[0]  # Pegando o primeiro arquivo encontrado
             with open(fileSearchReady, 'r', encoding='utf-8') as file:
                 prompt = file.read()
             return prompt
+        else:
+            return "Nenhum prompt foi encontrado"  
         
 
 
-conv = "Olá"
-data = get_gpt4_response(conv, "/home/dev/resources/googledrive/arquivo.txt")
-print(f"{data}")
+# conv = "Olá"
+# data = get_gpt4_response(conv, "/home/dev/resources/googledrive/arquivo.txt")
+# print(f"{data}")
 
 
 
