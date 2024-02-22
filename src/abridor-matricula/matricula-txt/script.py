@@ -29,7 +29,7 @@ def listar_e_criar_minutas(diretorio, prefixo="mat", sufixo=".minuta.txt", novo_
                         
                         prompt = utils.get_prompt_drive("/home/dev/prompt/Dev/Prompt abridor de matricula/")
                         nameLog = prefixo + matricula + sufixoLog
-                        pathLog = os.path.join(pasta_atual + nameLog)
+                        pathLog = os.path.join(pasta_atual+ "/" + nameLog)
                         resultado = utils.get_gpt4_response(prompt, conteudo_original, pathLog)
 
                     # Após imprimir, cria o novo arquivo de minuta (ou qualquer outra ação desejada)

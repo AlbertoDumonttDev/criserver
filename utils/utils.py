@@ -4,10 +4,12 @@ import openai
 import os
 import glob
 
-
 from datetime import datetime
 
-openai.api_key = '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'
+
+openai.api_key = os.getenv('api_key_openai')
+
+#'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'
 
 
 
@@ -106,13 +108,31 @@ def get_prompt_drive(pathFile):
             return prompt
         else:
             return "Nenhum prompt foi encontrado"  
-        
 
 
-# conv = "Olá"
-# data = get_gpt4_response(conv, "/home/dev/resources/googledrive/arquivo.txt")
-# print(f"{data}")
 
+#                           request_for_test_gpt4
+# -------------------------------------------------------------------------
+# Função para fazer chamada de teste na API da openai com GPT-4
+# -------------------------------------------------------------------------
+#                        Bibliotecas a importar
+# import openai - para usar api da OPENAI
+
+def request_for_test_gpt4(promptUser):
+
+    try:
+        # Notice the use of openai.ChatCompletion here
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # Example of a chat-based model
+            messages=[
+                {"role": "system", "content": ""},
+                {"role": "user", "content": promptUser},
+            ]
+        )
+
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return str(e)
 
 
 

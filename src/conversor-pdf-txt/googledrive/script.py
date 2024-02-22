@@ -4,8 +4,6 @@ import PyPDF2
 import os
 
 
-
-
 def listar_e_criar_minutas(diretorio, novo_sufixo=".pdf.dig.txt"):
     arquivos_processados = []
 
