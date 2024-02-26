@@ -3,14 +3,14 @@
 import openai
 import os
 import glob
+import boto3
+import json
 
 from datetime import datetime
 
 
+# KEY PARA CHAMADAS OPENAI
 openai.api_key = os.getenv('api_key_openai')
-
-#'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'
-
 
 
 #                           get_gpt4_response
@@ -22,7 +22,7 @@ openai.api_key = os.getenv('api_key_openai')
 # import openai - para usar api da OPENAI
 # from datetime import datetime - para variaveis de horario e data
 
-def get_gpt4_response(promptUser ,attachmentUser, pathFile):
+def get_gpt4_response(promptUser, attachmentUser, pathFile):
 
     prompt = f"{promptUser} {attachmentUser}"
 
@@ -44,6 +44,87 @@ def get_gpt4_response(promptUser ,attachmentUser, pathFile):
         return response['choices'][0]['message']['content'].strip()
     except Exception as e:
         return str(e)
+
+
+
+#                           get_claude_2_1_response
+# -------------------------------------------------------------------------
+# Função para fazer chamada na API da AWS bedrock no modelo ANTHROPIC CLAUDE 2.1
+# 
+# -------------------------------------------------------------------------
+#                        Bibliotecas a importar
+# import boto3 - Fazer chamada na bedrock
+# import json - Importar a response da request em JSON
+    
+def get_claude_2_1_response(promptUser, attachmentUser,  pathFile):
+
+    initNow = datetime.now()
+    initData = initNow.strftime("%d/%m/%Y")
+    initHour = initNow.strftime("%H:%M:%S")
+
+    # Inicialize o cliente do Bedrock Runtime
+    brt = boto3.client(service_name='bedrock-runtime')
+
+    # Prepare o corpo da solicitação
+    body = json.dumps({
+        "prompt": f"\n\nHuman:{promptUser} {attachmentUser}\n\nAssistant:",
+        "max_tokens_to_sample": 1000,
+        "temperature": 0.1,
+        "top_p": 0.9,
+    })
+
+    # Substitua 'modelId' pelo ID do modelo Claude 2.1
+    modelId = 'anthropic.claude-v2:1'
+    accept = 'application/json'
+    contentType = 'application/json'
+
+    # Faça a chamada de inferência
+    response = brt.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
+
+    # response_body = json.loads(response['body'].read().decode('utf-8'))
+    response_body = json.loads(response['body'].read().decode('utf-8'))
+    # Agora, response_body deve ser um dicionário Python contendo os dados que você espera
+
+    input_token_count = response['ResponseMetadata'].get('HTTPHeaders', {}).get('x-amzn-bedrock-input-token-count')
+    output_token_count = response['ResponseMetadata'].get('HTTPHeaders', {}).get('x-amzn-bedrock-output-token-count')
+
+    create_log_claude_2_1(initData, initHour, input_token_count, output_token_count, pathFile)
+
+
+    return response_body.get('completion')
+
+
+
+#                           create_log_claude_2_1
+# -------------------------------------------------------------------------
+# Função para criar arquivo de log com dados de consumo da API do ANTHROPIC CLAUDE 2.1
+# -------------------------------------------------------------------------
+#                        Bibliotecas a importar
+# import os
+# from datetime import datetime - para variaveis de horario e data
+
+def create_log_claude_2_1(initData, initHour, input_token_count, output_token_count, pathFile):
+
+        finishNow = datetime.now()
+        finishData = finishNow.strftime("%d/%m/%Y")
+        finishHour = finishNow.strftime("%H:%M:%S")
+
+        format = "%H:%M:%S"
+        initHour_dt = datetime.strptime(initHour, format)
+        finishHour_dt = datetime.strptime(finishHour, format)
+        diferrenceHour = round((finishHour_dt - initHour_dt).total_seconds() / 60, 2)  
+
+        tokenCalculatorInput = (int(input_token_count) / 1000) * 0.008
+        tokenCalculatorOutput = (int(output_token_count) / 1000) * 0.0024
+
+        totalPrincingToken = round((tokenCalculatorInput + tokenCalculatorOutput) * 4.93, 2)
+        
+
+        dataTXT = f"ARQUIVO DE LOG {pathFile}\n\ndata de inicio: {initData}\nhora de inicio: {initHour}\nErros: 0\ndata de conclusão: {finishData}\nhora de conclusão: {finishHour}\ntempo para conclusão: {diferrenceHour} minutos\nquantidade de tokens de entrada: {input_token_count}\nquantidade de tokens de saída: {output_token_count}\ncusto de IA estimado em tokens: R$ {totalPrincingToken} (Dolar atual R$ 4,93)"
+        print(f"{dataTXT}")
+
+        with open(pathFile, 'w') as arquivo_novo:
+            arquivo_novo.write(dataTXT)
 
 
 
@@ -70,8 +151,8 @@ def create_log_gpt4(response, initData, initHour, pathFile):
         completion_tokens = response["usage"]["completion_tokens"]
 
         
-        tokenCalculatorInput = (prompt_tokens / 1000) * 0.3
-        tokenCalculatorOutput = (completion_tokens / 1000) * 0.6
+        tokenCalculatorInput = (prompt_tokens / 1000) * 0.03
+        tokenCalculatorOutput = (completion_tokens / 1000) * 0.06
         totalPrincingToken = round((tokenCalculatorInput + tokenCalculatorOutput) * 4.93, 2)
         
 
