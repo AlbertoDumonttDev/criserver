@@ -5,7 +5,10 @@ import os
 import glob
 import boto3
 import json
+import textract
+import docx2txt
 
+from docx import Document
 from datetime import datetime
 
 
@@ -67,9 +70,9 @@ def get_claude_2_1_response(promptUser, attachmentUser,  pathFile):
 
     # Prepare o corpo da solicitação
     body = json.dumps({
-        "prompt": f"\n\nHuman:{promptUser} {attachmentUser}\n\nAssistant:",
-        "max_tokens_to_sample": 1000,
-        "temperature": 0.1,
+        "prompt": f"\n\nHuman: {promptUser} {attachmentUser}\n\nAssistant:",
+        "max_tokens_to_sample": 2000,
+        "temperature": 0.0,
         "top_p": 0.9,
     })
 
@@ -120,7 +123,7 @@ def create_log_claude_2_1(initData, initHour, input_token_count, output_token_co
         totalPrincingToken = round((tokenCalculatorInput + tokenCalculatorOutput) * 4.93, 2)
         
 
-        dataTXT = f"ARQUIVO DE LOG {pathFile}\n\ndata de inicio: {initData}\nhora de inicio: {initHour}\nErros: 0\ndata de conclusão: {finishData}\nhora de conclusão: {finishHour}\ntempo para conclusão: {diferrenceHour} minutos\nquantidade de tokens de entrada: {input_token_count}\nquantidade de tokens de saída: {output_token_count}\ncusto de IA estimado em tokens: R$ {totalPrincingToken} (Dolar atual R$ 4,93)"
+        dataTXT = f"\nLOG {pathFile}\n\ndata de inicio: {initData}\nhora de inicio: {initHour}\nErros: 0\ndata de conclusão: {finishData}\nhora de conclusão: {finishHour}\ntempo para conclusão: {diferrenceHour} minutos\nquantidade de tokens de entrada: {input_token_count}\nquantidade de tokens de saída: {output_token_count}\ncusto de IA estimado em tokens: R$ {totalPrincingToken} (Dolar atual R$ 4,93)\n"
         print(f"{dataTXT}")
 
         with open(pathFile, 'w') as arquivo_novo:
@@ -218,4 +221,24 @@ def request_for_test_gpt4(promptUser):
 
 
 
+#                           convert_doc_to_txt
+# -------------------------------------------------------------------------
+# Função para ler documento doc e docx e armazenar em variavel
+# -------------------------------------------------------------------------
+#                        Bibliotecas a importar
+# from docx import Document - biblioteca ler documento docx
+# import docx2txt
+# import textract
 
+    
+def convert_doc_to_txt(filePath):
+
+    if filePath.endswith('.docx'):
+        doc = Document(filePath)
+        full_text = [para.text for para in doc.paragraphs]
+        return '\n'.join(full_text)
+    elif filePath.endswith('.doc'):
+        text = textract.process(filePath).decode('utf-8')
+        return text
+    else:
+        raise ValueError("Unsupported file format. Only .docx and .doc are supported.")

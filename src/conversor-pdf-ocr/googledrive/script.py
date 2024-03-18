@@ -61,7 +61,8 @@ def preprocessar_imagem_para_ocr(imagem):
 def extrair_texto(imagem):
     return pytesseract.image_to_string(imagem)
 
-diretorio_base = "/home/dev/resources/googledrive"  # Substitua pelo caminho do seu diretório "digital"
+# diretorio_base = "/home/dev/resources/test"  # Substitua pelo caminho do seu diretório "digital"
+diretorio_base = "/home/dev/resources/googledrive/" 
 data_limite = datetime.datetime(2024, 1, 15)  # Data limite para a modificação dos arquivos
 extensoes_permitidas = ['.pdf']  # Adicione as extensões de arquivo que você deseja incluir
 
