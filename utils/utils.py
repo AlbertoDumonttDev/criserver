@@ -96,6 +96,54 @@ def get_claude_2_1_response(promptUser, attachmentUser,  pathFile):
 
     return response_body.get('completion')
 
+#                      get_claude_3_sonnet_response
+# -------------------------------------------------------------------------
+# Função para fazer chamada na API da AWS bedrock no modelo ANTHROPIC CLAUDE 3
+# Modelo: Sonnet
+# -------------------------------------------------------------------------
+#                        Bibliotecas a importar
+# import boto3 - Fazer chamada na bedrock
+# import json - Importar a response da request em JSON
+
+def get_claude_3_sonnet_response(promptUser, attachmentUser,  pathFile):
+
+    initNow = datetime.now()
+    initData = initNow.strftime("%d/%m/%Y")
+    initHour = initNow.strftime("%H:%M:%S")
+
+    # Inicialize o cliente do Bedrock Runtime
+    brt = boto3.client(service_name='bedrock-runtime')
+
+    # Prepare o corpo da solicitação
+    body = json.dumps({
+        "prompt": f"\n\nHuman: {promptUser} {attachmentUser}\n\nAssistant:",
+        "max_tokens_to_sample": 2000,
+        "temperature": 0.0,
+        "top_p": 0.9,
+    })
+
+    # Substitua 'modelId' pelo ID do modelo Claude 2.1
+    modelId = 'anthropic.claude-3-sonnet-20240229-v1:0'
+    accept = 'application/json'
+    contentType = 'application/json'
+
+    # Faça a chamada de inferência
+    response = brt.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
+
+    # response_body = json.loads(response['body'].read().decode('utf-8'))
+    response_body = json.loads(response['body'].read().decode('utf-8'))
+    # Agora, response_body deve ser um dicionário Python contendo os dados que você espera
+
+    input_token_count = response['ResponseMetadata'].get('HTTPHeaders', {}).get('x-amzn-bedrock-input-token-count')
+    output_token_count = response['ResponseMetadata'].get('HTTPHeaders', {}).get('x-amzn-bedrock-output-token-count')
+
+    create_log_claude_2_1(initData, initHour, input_token_count, output_token_count, pathFile)
+
+
+    return response_body.get('completion')
+
+
+
 
 
 #                           create_log_claude_2_1

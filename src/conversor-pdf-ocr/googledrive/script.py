@@ -94,13 +94,17 @@ def listar_arquivos_modificados(diretorio, extensoes):
 
                         imagens = extrair_imagens_do_pdf(caminho_completo)
 
+                        status = os.path.join(pasta_atual, nome + '_aguarde_' + '.txt')
+
                         # Abrir (ou criar) o arquivo de saída e processar cada imagem
                         print(f'Arquivo sendo processado: {nome}\nCaminho: {caminho_completo}\n')
-                        with open(nome_arquivo_saida, 'w') as nome_arquivo_saida:
+                        with open(status, 'w') as caminho_status:
                             for imagem in imagens:
                                 imagem_processada = preprocessar_imagem_para_ocr(imagem)
                                 texto = extrair_texto(imagem_processada)
-                                nome_arquivo_saida.write(texto + "\n\n")
+                                caminho_status.write(texto + "\n\n")
+
+                        os.rename(status, nome_arquivo_saida)
 
                         
                         print(f'Arquivo: {nome_arquivo_saida}\n\n')
